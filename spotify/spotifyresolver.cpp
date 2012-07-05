@@ -171,7 +171,6 @@ SpotifyResolver::setup()
 void
 SpotifyResolver::getStatus()
 {
-    qDebug() << "FOUND tomahawk:" << m_foundTomahawkInstance;
     if ( m_haveSentStatus && !m_foundTomahawkInstance )
     {
         qDebug() << "TOMAHAWK NOT RUNNING? Exiting...";
@@ -194,7 +193,6 @@ SpotifyResolver::getStatus()
 void
 SpotifyResolver::gotStatus()
 {
-    qDebug() << Q_FUNC_INFO;
     m_foundTomahawkInstance = true;
 }
 
@@ -648,6 +646,14 @@ SpotifyResolver::playdarMessage( const QVariant& msg )
         saveSettings();
 
     }
+    else if ( m.value( "_msgtype" ) == "logout" )
+    {
+        m_username.clear();
+        m_pw.clear();
+        m_blob.clear();
+        saveSettings();
+        m_session->logout( true );
+    }
     else if ( m.value( "_msgtype" ) == "status" )
     {
         gotStatus();
@@ -665,6 +671,7 @@ SpotifyResolver::playdarMessage( const QVariant& msg )
         msg[ "_msgtype" ] = "credentials";
         msg[ "username" ] = m_username;
         msg[ "password" ] = (m_pw.isEmpty() ? "*****" : m_pw); // Placeholder for remembered user
+        msg[ "loggedIn" ] = m_loggedIn;
         msg[ "highQuality" ] = m_highQuality;
 
         sendMessage( msg );
